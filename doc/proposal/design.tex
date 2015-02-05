@@ -1,2 +1,17 @@
-\section{Design}
+\section{Deliverables and proposed timeline}
 \label{sec:design}
+The extent of our measurements will depend on the availability of Haswell
+servers, and on the PCIe counters that are actually accessible on these servers.
+While we believe that we can get access to these machines soon,
+some measurements can be done on SandyBridge machines also. For instance,
+the counters on SandyBridge machines could be sufficient to verify the model
+of PCIe communication used by InfiniBand cards in HERD~\cite{Kalia:sigcomm2014},
+and to make some new observations about Ethernet cards. If we do get access
+to Haswell machines, we will try to answer the questions outlined above including
+other interesting questions that we can think of.
+
+\textbf{Timeline:} We will dedicate the first one month to understanding PCIe
+and PCIe device drivers in more detail, and for doing some preliminary
+measurements on SandyBridge machines. If we don't get access to Haswell machines
+within this time, we will switch to performing more exhaustive testing on
+SandyBridge.

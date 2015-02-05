@@ -1,12 +1,51 @@
-\section{Introduction}
+\section{Introduction and Related Work}
 \label{sec:intro}
 
-\begin{itemize}
-  \item Intro
-  \item Outline
-  \item Would fit nicely
-  \item Here
-\end{itemize}
+Recent years have seen an industry wide transition from 1 Gbps Ethernet to
+10 Gbps Ethernet in the datacenter, and even faster networks with 40+ Gbps
+of bandwidth are on the horizon.  Getting the peak bandwidth from these
+network devices requires using modified~\cite{Rizzo2012} or userspace network
+stacks~\cite{Han:sigcomm2010, www-dpdk}.  Several recent research projects
+have used these network stacks for constructing high-performance networked
+systems~\cite{Han:xia-nsdi2012, zhou:conext2013, Lim:nsdi2014}.  A common problem
+faced by these systems is that, for small packets (close to minimum-sized
+Ethernet frames), the performance achieved is smaller than the network's
+bandwidth.  For instance, consider CuckooSwitch~\cite{zhou:conext2013}, that
+uses dual-port 10 GbE NICs connected to CPU via PCIe 2.0 x8.  While the
+theoretical packet rate per 10 Gbps port with minimum sized packets is
+14.88 millon packets per-second (Mpps), CuckooSwitch achieves~$\sim$~23 Mpps
+per-NIC (the theoretical per-NIC throughput is 14.88*2~=~29.76 Mpps). CuckooSwitch,
+like other systems~\cite{Han:xia-nsdi2012, zhou:conext2013, Lim:nsdi2014},
+explains this discrepancy between expected and observed throughput by claiming
+PCIe as the bottleneck.  However, to our knowledge, there is no work on
+understanding on \emph{why} PCIe might be a bottleneck. Indeed, a PCIe 2.0 x8
+link has 32 Gbps of theoretical bandwidth, and \emph{could} be sufficient to
+support two 10 Gbps ports.
 
-We have some related work in Section~\ref{sec:related}.
-\mk{Need to fix!}
+In this project, we are not challenging the claim that PCIe is the bottleneck
+for these systems.  Our aim is to systematically understand the interaction
+between NICs and CPUs over PCIe.  Consider, for example, the generally accepted
+model of packet transmission over an Ethernet NIC in terms of the PCIe operations
+involved.
+\begin{enumerate}
+\item{PCIe MMIO write:} A CPU-side driver writes to a doorbell register on the NIC.
+\item{PCIe DMA read:} The NIC reads the packet descriptor from the CPU's memory.
+\item{PCIe DMA read:} The NIC reads the packet's data from the CPU's memory.
+\end{enumerate}
+
+Apart from checking this its accuracy, there are several questions that need to
+be answered regarding this model. For instance, if the drives wishes to transmit a batch
+of $N$ packets, how many doorbell writes happen?  Are doorbell writes split into
+multiple PCIe transactions if PCIe ``write-combining'' is used? Does the NIC read
+all the descriptors in one DMA read?  If so, what is the maximum number of descriptors
+that the NIC can read in one DMA read?
+
+\textbf{Our methodology:} We propose to answer the above (and other similar)
+questions by using the PCIe performance counters available in the Xeon series of
+Intel CPUs.  We mainly have access to SandyBridge machines, where two main counters
+are accessible---The number of \emph{full-cacheline} PCIe reads and writes issued
+by the device.  We believe that more counters, including MMIO write counters
+and partial-cacheline counters are available on Haswell servers.
+
+
+

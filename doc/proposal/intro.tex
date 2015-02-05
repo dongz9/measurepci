@@ -33,7 +33,7 @@ involved.
 \item{PCIe DMA read:} The NIC reads the packet's data from the CPU's memory.
 \end{enumerate}
 
-Apart from checking this its accuracy, there are several questions that need to
+Apart from checking its accuracy, there are several questions that need to
 be answered regarding this model. For instance, if the drives wishes to transmit a batch
 of $N$ packets, how many doorbell writes happen?  Are doorbell writes split into
 multiple PCIe transactions if PCIe ``write-combining'' is used? Does the NIC read

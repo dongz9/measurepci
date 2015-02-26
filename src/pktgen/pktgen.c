@@ -111,7 +111,6 @@ pktgen_loop(void *arg)
 	unsigned ctx[MAX_PORT];
 #ifdef ENABLE_FLOW_CONTROL
 	unsigned cap = num_enabled_ports * flow_control;
-	printf("cap=%u\n", cap);
 #endif
 
 	start_tsc = rte_rdtsc();
@@ -125,7 +124,7 @@ pktgen_loop(void *arg)
 
 		if (cur_tsc >= next_tsc) {
 			if (lcore_id == master_lcore_id) {
-				double thruput = 0.0;
+				uint64_t thruput = 0;
 
 				for (port_id = 0; port_id < num_ports; ++port_id) {
 					if (!((enabled_port_mask >> port_id) & 1))
@@ -138,9 +137,12 @@ pktgen_loop(void *arg)
 				}
 
 				printf(
-					"%04llu thruput=%.2lf\n",
-					(cur_tsc - start_tsc) / tsc_hz,
-					((double)thruput));
+					"%04llu opackets=",
+					(cur_tsc - start_tsc) / tsc_hz);
+				if (thruput >= 100000)
+				  printf("%.2lf M\n", ((double)thruput) / 1000000);
+				else
+				  printf("%llu\n", thruput);
 			}
 
 			next_tsc += tsc_hz;

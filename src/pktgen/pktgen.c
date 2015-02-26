@@ -111,6 +111,7 @@ pktgen_loop(void *arg)
 	unsigned ctx[MAX_PORT];
 #ifdef ENABLE_FLOW_CONTROL
 	unsigned cap = num_enabled_ports * flow_control;
+	printf("cap=%u\n", cap);
 #endif
 
 	start_tsc = rte_rdtsc();
@@ -139,7 +140,7 @@ pktgen_loop(void *arg)
 				printf(
 					"%04llu thruput=%.2lf\n",
 					(cur_tsc - start_tsc) / tsc_hz,
-					((double)thruput) / 1000000.0);
+					((double)thruput));
 			}
 
 			next_tsc += tsc_hz;

@@ -371,7 +371,7 @@ dpdk_initialize(int argc, char **argv)
 		print_ethaddr(" address", &port_data[port_id].ethaddr);
 		printf("\n");
 	}
-	enabled_port_mask = ~0;
+	enabled_port_mask = (1 << num_ports) - 1;
 	
 	num_lcores = rte_lcore_count();
 	printf("Detected %u lcores\n", num_lcores);

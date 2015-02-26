@@ -43,7 +43,7 @@ echo_loop(void *arg)
 
 		if (cur_tsc - prev_tsc > tsc_hz) {
 			if (lcore_id == master_lcore_id) {
-				double ipackets = 0.0, opackets = 0.0;
+				uint64_t ipackets = 0, opackets = 0;
 
 				for (port_id = 0; port_id < num_ports; ++port_id) {
 					if (!((enabled_port_mask >> port_id) & 1))
@@ -57,11 +57,18 @@ echo_loop(void *arg)
 					prev_port_opackets[port_id] = port_opackets[port_id];
 				}
 
-				printf(
-					"%04llu ipackets=%.2lf, opackets=%.2lf\n",
-					(cur_tsc - start_tsc) / tsc_hz,
-					(double)ipackets / 1000000.0,
-					(double)opackets / 1000000.0);
+				printf("%04llu", (cur_tsc - start_tsc) / tsc_hz);
+				printf(" ipackets=");
+				if (ipackets >= 100000)
+					printf("%.2lf M", (double)ipackets / 1000000.0);
+				else
+					printf("%llu", ipackets);
+				printf(" opackets=");
+				if (opackets >= 100000)
+					printf("%.2lf M", (double)opackets / 1000000.0);
+				else
+					printf("%llu", opackets);
+				putchar('\n');
 			}
 
 			prev_tsc = cur_tsc;
@@ -76,6 +83,7 @@ echo_loop(void *arg)
 				continue;
 
 			num_pkts = recv_pkts(port_id, queue_id, pkts, DEFAULT_PKT_BURST);
+			/* printf("recv %u pkts from port %u\n", num_pkts, port_id); */
 			port_ipackets[port_id] += num_pkts;
 			
 			for (i = 0; i < num_pkts; ++i)

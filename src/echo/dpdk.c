@@ -84,7 +84,7 @@ lcore_data_t **lcore_data;
 
 uint16_t tx_burst_size = 1;
 
-static int promiscuous_on = 0;
+static int promiscuous_on = 1;
 
 static void
 mbuf_pool_create(unsigned num_mbuf, unsigned socket_id)

@@ -1,0 +1,6 @@
+1. pptpsetup --create ShoeboxVPN --server 192.55.66.51 --username dongzhou --password MeVawa7u --encrypt
+2. route add -net 192.168.101.0/24 ppp0
+3. server:
+   ssh intel-lab@192.168.101.37 / password: Rbrack2014
+   client:
+   ssh dongz@192.168.101.35 / password: fawn4ever

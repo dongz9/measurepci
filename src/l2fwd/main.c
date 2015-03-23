@@ -39,8 +39,8 @@ static const struct rte_eth_txconf tx_conf = {
 		.hthresh = TX_HTHRESH,
 		.wthresh = TX_WTHRESH,
 	},
-	.tx_free_thresh = 0, /* Use PMD default values */
-	.tx_rs_thresh = 0, /* Use PMD default values */
+	.tx_free_thresh = 1, /* Use PMD default values */
+	.tx_rs_thresh = 1, /* Use PMD default values */
 };
 
 static int
@@ -108,18 +108,9 @@ main(int argc, char **argv)
 
 		/**< xia-router0/1 use an IO-Hub for PCIe devices, so NICs don't have
 		  *  a NUMA-socket. */
-		int my_socket_id = is_client == 1 ?
-			get_socket_id_from_macaddr(port_id) :
-			rte_eth_dev_socket_id(port_id);
+		int my_socket_id = 0;
 
-		/**< XXX: Need to implement logic so that server lcores only access
-		  *  the ports on their socket. Until then, restrict to one socket */
-		if(!is_client) {
-			assert(my_socket_id == 0);
-		}
-
-		int num_queues = is_client == 1 ? 3 :
-			count_active_lcores_on_socket(my_socket_id);
+		int num_queues = 1;
 
 		printf("Initializing port %u on socket %d with %d queues \n", 
 			(unsigned) port_id, my_socket_id, num_queues);
@@ -131,12 +122,7 @@ main(int argc, char **argv)
 
 		int queue_id = 0;
 		for(queue_id = 0; queue_id < num_queues; queue_id ++) {
-			int my_lcore_id;
-			if(is_client) {
-				my_lcore_id = client_port_queue_to_lcore(port_id, queue_id);
-			} else {
-				my_lcore_id = get_lcore_ranked_n(queue_id, my_socket_id);
-			}
+			int my_lcore_id = 0;
 	
 			if(rte_lcore_is_enabled(my_lcore_id) == 0) {
 				red_printf("\tQueue %d on port %d wants disabled lcore %d!\n",

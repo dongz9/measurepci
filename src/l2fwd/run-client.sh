@@ -20,12 +20,7 @@ sudo rm -rf /mnt/huge/*
 sudo ipcrm -M 1
 sudo ipcrm -M 2
 
-sudo ./build/l2fwd -c 0x555 -n 3 client $@	&	#AAA means all odd numbered cores
-
-# Prevent clients from running overnight
-sleep 3600
-blue "Max client duration = 3600s. Killing all clients!"
-sudo killall l2fwd
+sudo ./build/l2fwd -c 0x1 -n 1 client $@
 
 # Core masks: The assignment of lcores to ports is fixed. 
 # 	int lcore_to_port[12] = {0, 2, 0, 2, 0, 2, 1, 3, 1, 3, 1, 3};

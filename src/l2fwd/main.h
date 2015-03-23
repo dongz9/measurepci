@@ -51,7 +51,7 @@
 #define S_FAC ((double) GHZ_CPS / XIA_R2_CPS)
 
 // All xia hardware specific features need to be prefixed by XIA_
-#define XIA_R0_PORT_MASK 0x3	// xge0,1
+#define XIA_R0_PORT_MASK 0x2	// xge0,1
 #define XIA_R0_CPS 2270000000	// Client cycles per second
 
 #define XIA_R2_PORT_MASK 0xf	// xge0,1,2,3

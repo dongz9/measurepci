@@ -115,7 +115,39 @@ PCIe interconnect. There are 3 possible methods of doing this.
 
 \begin{enumerate}
 \item \textbf{Doorbell method}: The CPU writes to a memory-mapped register in
-the NIC, alerting it of a new WQE. The NIC reads the WQE via a PCIe DMA read.
+the NIC, alerting it of the availability of a new WQE. The NIC reads the WQE via
+a PCIe DMA read. This requires 2 PCIe transactions: a PCIe write from CPU to NIC,
+and a PCIe read from NIC to CPU.
 \item \textbf{BlueFlame method}: Using Mellanox's terminology, in the BlueFlame
-method, the CPU writes the entire WQE to the NIC via MMIO.
+method, the CPU writes the entire WQE to the NIC via MMIO. This only requires
+1 PCIe write and removes $\sim$200-400ns of PCIe read latency from the critical
+path.
 \end{enumerate}
+
+After processing the WQE, the NIC writes a completion queue element to the
+host's memory. This is done using a PCIe DMA write.
+
+\subsection{PCIe counters}
+Intel's Xeon CPUs provide counters for several useful PCIe events. The PCIe
+counters measure activity between the CPU's PCIe controller and the L3 cache.
+As all communication with the L3 cache needs to be done at a cacheline
+granularity, the counters can miss some critical information. For example,
+irrespective of whether the NIC reads a 4-byte or 64-byte chunk of host memory,
+the counters report 1 PCIe read. Further, the older CPU generations have fewer
+working counters.
+
+The PCIe counters are easily accessible using the \texttt{pcm-pcie.x} utility
+which is a part of Intel's freely available Performance Counter
+Monitor~\cite{www-intel-pcm}. As the behavior of these counters is not well
+understood or documented, we include a description of 3 useful counters here.
+
+\begin{itemize}
+\item \textbf{PCIeRdCur}: The number of partial cacheline DMA reads done by
+the device. This counter works in the same way on both Haswell and
+SandyBridge/IvyBridge CPUs.
+\item \textbf{PCIeItoM}: The number of full cacheline DMA writes done by the
+the device. On SandyBridge/IvyBridge, there is no way to count the number of
+partial cacheline DMA writes.
+\item \textbf{WiL}: The number of partial and full cacheline MMIO transfers
+done by the CPU. This counter is disabled on SandyBridge/IvyBridge.
+\end{itemize}

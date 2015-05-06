@@ -1,0 +1,12 @@
+Intel 2697 v3:
+==============
+
+0000:03:00.0 'Ethernet Controller 10-Gigabit X540-AT2' if=em0 drv=ixgbe unused=igb_uio *Active*
+0000:03:00.1 'Ethernet Controller 10-Gigabit X540-AT2' if=eth1 drv=ixgbe unused=igb_uio 
+0000:05:00.0 '82599ES 10-Gigabit SFI/SFP+ Network Connection' if=p785p1 drv=ixgbe unused=igb_uio 
+0000:05:00.1 '82599ES 10-Gigabit SFI/SFP+ Network Connection' if=p785p2 drv=ixgbe unused=igb_uio 
+0000:07:00.0 '82599ES 10-Gigabit SFI/SFP+ Network Connection' if=p786p1 drv=ixgbe unused=igb_uio 
+0000:07:00.1 '82599ES 10-Gigabit SFI/SFP+ Network Connection' if=p786p2 drv=ixgbe unused=igb_uio 
+0000:81:00.0 '82599ES 10-Gigabit SFI/SFP+ Network Connection' if=p787p1 drv=ixgbe unused=igb_uio 
+0000:81:00.1 '82599ES 10-Gigabit SFI/SFP+ Network Connection' if=p787p2 drv=ixgbe unused=igb_uio 
+

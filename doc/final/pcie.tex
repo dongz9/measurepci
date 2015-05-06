@@ -81,21 +81,41 @@ high-bandwidth communication. The InfiniBand adapters used in this work have 56
 Gbps of peak theoretical bandwidth per port, with $\sim$ 2 microseconds of
 round-trip latency. All InfiniBand-compliant adapters must also provide RDMA.
 
-\subsubsection{InfiniBand protocol}
+\subsubsection{InfiniBand protocol and verbs}
 Similar to PCIe, InfiniBand is a layered protocol. The header format of an
 InfiniBand packet depends on several factors including the transport (connected
 or datagram) and the type of RDMA operation (RDMA write or read or atomic). We
 omit repeating all the header fields in this paper because they are irrelevant
 from the PCIe point of view.
 
+InfiniBand operations are also called ``verbs''. There are two main types of
+verbs---memory verbs (RDMA READ and WRITE), which specify the remote memory
+address to operate on, and messaging verbs (SENDs and RECVs), which behave
+somewhat similarly to traditional UNIX sockets. The remote address to which the
+payload of a SEND is written to is specified in a RECV that was previously
+posted by the remote host.
+
 \subsubsection{CPU-NIC interaction for RDMA}
 InfiniBand communication uses queue pairs at the end hosts. To initiate an
 InfiniBand operation, a user-level NIC driver at the requester host creates
 a Work Queue Element (WQE) in host memory\footnote{We call the memory (cache
 or DRAM) connected to a host CPU ``host memory'' and the memory (SRAM) of a NIC
-``device memory''.}. This WQE needs to be transferred from host memory to device
-memory over the PCIe interconnect. There are 3 possible methods:
+``device memory''.}. The size of the WQE depends on several factors:
+the type of InfiniBand operation, the InfiniBand transport, and whether or not
+the data payload is ``inlined'' in the WQE. For example, excluding the optional
+inlined data payload, an RDMA write WQE is 36 bytes in size. It consists of
+16 byte control segment which contains the operation opcode and the queue pair
+number of the remote peer's queue pair, a 16 byte ``remote address'' segment
+which contains the address and permissions for the remote memory area to write
+the data payload to, and a 4 byte data length field.
+
+
+The WQE needs to be transferred from host memory to device memory over the
+PCIe interconnect. There are 3 possible methods of doing this.
 
 \begin{enumerate}
-\item \textbf{Doorbell method}: In this method, 
+\item \textbf{Doorbell method}: The CPU writes to a memory-mapped register in
+the NIC, alerting it of a new WQE. The NIC reads the WQE via a PCIe DMA read.
+\item \textbf{BlueFlame method}: Using Mellanox's terminology, in the BlueFlame
+method, the CPU writes the entire WQE to the NIC via MMIO.
 \end{enumerate}

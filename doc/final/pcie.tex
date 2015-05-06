@@ -45,10 +45,20 @@ header, and checksum at both the transport and link layer.
 For the purposes of this paper, we assume that there are two types of PCIe
 operations: memory read and memory write. The type of operation and the memory
 address (in the peer's virtual memory) to read or write from is specified
-in the transaction layer header. Therefore,  the transaction layer
+in the transaction layer header. Therefore, the transaction layer
 header can be either 12 or 16 bytes depending on whether 32-bit or 64-bit
 addressing is used.  As almost all modern servers use 64-bit addressing, we
 assume that the size of the transaction layer header is 16 bytes.
+
+Note that the exact method of generating PCIe read and write transactions is
+different for CPUs and NICs. The two common methods for generating these
+transactions are Mapped Memory I/O (MMIO) and Direct Memory Access (DMA). MMIO
+is used by the CPU to read or write the NIC's memory, whereas the NIC uses
+DMA to read or write the CPU's memory. The efficiency of these two methods in
+terms of CPU utilization (CPU utilization is reduced if a CPU-initiated MMIO
+write can be replaced by a NIC-initiated DMA read) and PCIe bandwidth (MMIO
+operations are restricted to a cacheline granularity) is different, which leads
+to interesting optimizations and tradeoffs~\ref{sec:measurements}.
 
 From Figure~\ref{fig:pcie-tlp}, it is clear that the minimum TLP overhead of
 a PCIe packet is 30 bytes. This overhead is comparable to the common size of
@@ -64,4 +74,28 @@ systems, as we will show in Section~\ref{sec:measurements}.
 	\label{fig:pcie-tlp}
 \end{figure}
 
+\subsection{InfiniBand}
+InfiniBand is standard for high-speed communication, commonly deployed between
+two servers in a datacenters. InfiniBand focuses on low-latency and
+high-bandwidth communication. The InfiniBand adapters used in this work have 56
+Gbps of peak theoretical bandwidth per port, with $\sim$ 2 microseconds of
+round-trip latency. All InfiniBand-compliant adapters must also provide RDMA.
 
+\subsubsection{InfiniBand protocol}
+Similar to PCIe, InfiniBand is a layered protocol. The header format of an
+InfiniBand packet depends on several factors including the transport (connected
+or datagram) and the type of RDMA operation (RDMA write or read or atomic). We
+omit repeating all the header fields in this paper because they are irrelevant
+from the PCIe point of view.
+
+\subsubsection{CPU-NIC interaction for RDMA}
+InfiniBand communication uses queue pairs at the end hosts. To initiate an
+InfiniBand operation, a user-level NIC driver at the requester host creates
+a Work Queue Element (WQE) in host memory\footnote{We call the memory (cache
+or DRAM) connected to a host CPU ``host memory'' and the memory (SRAM) of a NIC
+``device memory''.}. This WQE needs to be transferred from host memory to device
+memory over the PCIe interconnect. There are 3 possible methods:
+
+\begin{enumerate}
+\item \textbf{Doorbell method}: In this method, 
+\end{enumerate}

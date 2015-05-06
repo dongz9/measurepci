@@ -1,2 +1,21 @@
 \section{Measurements}
 \label{sec:measurements}
+We conducted our measurements on the two hardware platforms described in
+Table~\ref{tab:platforms}. As both platforms have SandyBridge CPUs, we were
+unable to access PCIe counters for MMIO and partial cacheline DMA writes.
+These counters are available on Haswell CPUs, and studying them is a part of
+our future work.
+
+\begin{table*}[h]
+\begin{center}
+    \begin{tabular}{p{2.5cm} p{6cm} p{10cm}}
+	\textbf{Platform name} & \textbf{CPU} & \textbf{NIC}\\
+    \hline
+	Apt & Xeon E5-2450 (Sandy Bridge) & ConnectX-3 (single-port 56 Gb/s InfiniBand) via PCIe 3.0 x8 \\
+	NetApp & Xeon E5-2670 (Sandy Bridge) & Connect-IB (dual-port 56 Gb/s InfiniBand) via PCIe 3.0 x16 \\
+    \end{tabular}
+\caption{Measurement platforms.}
+\label{tab:platforms}
+\end{center}
+\end{table*}
+

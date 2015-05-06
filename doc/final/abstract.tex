@@ -1,0 +1,15 @@
+\begin{abstract}
+Understanding the low-level behavior of network interface cards (NICs) is an
+important step towards building high-performance networked systems. In this
+paper, we study one aspect of this behavior for InfiniBand network cards---the
+interaction between the NIC and their PCI Express (PCIe) interface to
+CPUs---using hardware counters.  While prior work presents a high-level picture
+of this interaction~\cite{Kalia:sigcomm2014}, there is no existing emperical
+measurement to the best of our knowledge.
+
+We find two interesting behaviors. First, the PCIe behavior of non-batched and
+batched RDMA operations is very different at the requester.  Second, we discover
+evidence of a work request cache in the NICs, and suspect that the cache is
+malfunctioning in the ConnectX-3 generation of InfiniBand NICs.
+
+\end{abstract}

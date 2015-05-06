@@ -194,8 +194,7 @@ Copyright 200X ACM X-XXXXX-XX-X/XX/XX ...\$5.00}
 
 \date{}
 \title{\textbf{\TITLE}}
-\author{{\large {\AUTHORS}}\\
-{\em \{akalia,dongz\}@cs.cmu.edu, nandita@cmu.edu}}
+\author{{\large {\AUTHORS}}\\}
 
 % This needs to be the last thing before \begin{document}
 %\usepackage{microtype}  % SPACE
@@ -211,10 +210,12 @@ Copyright 200X ACM X-XXXXX-XX-X/XX/XX ...\$5.00}
 \input{abstract}
 \ifthenelse{\equal{\onlyAbstract}{no}}{%
 \input{intro}
-\input{design}
+\input{pcie}
+\input{measurements}
+%%%\input{design}
 %%\input{eval}
-%%\input{related}
-%%\input{concl}
+\input{related}
+\input{concl}
 
 %\appendix
 %\input{appendix_sources}

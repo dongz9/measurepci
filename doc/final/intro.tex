@@ -1,51 +1,45 @@
 \section{Introduction and Related Work}
 \label{sec:intro}
 
-Recent years have seen an industry wide transition from 1 Gbps Ethernet to
-10 Gbps Ethernet in the datacenter, and even faster networks with 40+ Gbps
-of bandwidth are on the horizon.  Getting the peak bandwidth from these
-network devices requires using modified~\cite{Rizzo2012} or userspace network
-stacks~\cite{Han:sigcomm2010, www-dpdk}.  Several recent research projects
-have used these network stacks for constructing high-performance networked
-systems~\cite{Han:xia-nsdi2012, zhou:conext2013, Lim:nsdi2014}.  A common problem
-faced by these systems is that, for small packets (close to minimum-sized
-Ethernet frames), the performance achieved is smaller than the network's
-bandwidth.  For instance, consider CuckooSwitch~\cite{zhou:conext2013}, that
-uses dual-port 10 GbE NICs connected to CPU via PCIe 2.0 x8.  While the
-theoretical packet rate per 10 Gbps port with minimum sized packets is
-14.88 millon packets per-second (Mpps), CuckooSwitch achieves~$\sim$~23 Mpps
-per-NIC (the theoretical per-NIC throughput is 14.88*2~=~29.76 Mpps). CuckooSwitch,
-like other systems~\cite{Han:xia-nsdi2012, zhou:conext2013, Lim:nsdi2014},
-explains this discrepancy between expected and observed throughput by claiming
-PCIe as the bottleneck.  However, to our knowledge, there is no work on
-understanding on \emph{why} PCIe might be a bottleneck. Indeed, a PCIe 2.0 x8
-link has 32 Gbps of theoretical bandwidth, and \emph{could} be sufficient to
-support two 10 Gbps ports.
+Fast networks with Remote Direct Memory Access (RDMA) are becoming increasingly
+popular.  Designing software systems to make the best use of these networks
+is an interesting challenge because of the large design space. For example,
+a key-value store atop RDMA can be designed with RDMA reads~\cite{Pilaf, FaRM},
+RDMA writes~\cite{Kalia:sigcomm2014}, or a combination of both. Finding the
+best design, as demonstrated by prior work~\cite{Kalia:sigcomm2014}, depends on
+understanding the relative performance of different RDMA operations.
 
-In this project, we are not challenging the claim that PCIe is the bottleneck
-for these systems.  Our aim is to systematically understand the interaction
-between NICs and CPUs over PCIe.  Consider, for example, the generally accepted
-model of packet transmission over an Ethernet NIC in terms of the PCIe operations
-involved.
-\begin{enumerate}
-\item{PCIe MMIO write:} A CPU-side driver writes to a doorbell register on the NIC.
-\item{PCIe DMA read:} The NIC reads the packet descriptor from the CPU's memory.
-\item{PCIe DMA read:} The NIC reads the packet's data from the CPU's memory.
-\end{enumerate}
+For small messages, the performance of RDMA operations is closely tied to their
+behavior at the PCIe level. Avoiding unnecessary PCIe transactions can improve
+performance by several factors, and is necessary to obtain the vendor's
+advertized performance~\cite{Kalia:sigcomm2014}. Therefore, understanding the
+\emph{exact} PCIe behavior of these operations is critical. While prior work
+paints a rough picture of this behavior, which is also known through
+word-of-mouth in the RDMA community, a measurement-based analysis of this
+behavior is not available.
 
-Apart from checking its accuracy, there are several questions that need to
-be answered regarding this model. For instance, if the driver wishes to transmit a batch
-of $N$ packets, how many doorbell writes happen?  Are doorbell writes split into
-multiple PCIe transactions if PCIe ``write-combining'' is used? Does the NIC read
-all the descriptors in one DMA read?  If so, what is the maximum number of descriptors
-that the NIC can read in one DMA read?
+Part of the difficulty in understanding this behavior lies in the perceived
+unavailability of PCIe measurement hardware. ASIC-based PCIe analysers are
+expensive devices (over 10,000\$ for a PCIe 3.0 x16 analyser) and are not
+widely available. However, we find that the PCIe counters found in Intel's
+Xeon servers are sufficient for several measurements.
 
-\textbf{Our methodology:} We propose to answer the above (and other similar)
-questions by using the PCIe performance counters available in the Xeon series of
-Intel CPUs.  We mainly have access to SandyBridge machines, where two main counters
-are accessible---The number of \emph{full-cacheline} PCIe reads and writes issued
-by the device.  We believe that more counters, including MMIO write counters
-and partial-cacheline counters are available on Haswell servers.
+We make the following main contributions:
+\begin{itemize}
+\item We verify the PCIe behavior of RDMA read and write operations as
+described in HERD~\cite{Kalia:sigcomm2014}.
+\item We discover that the PCIe behavior of non-batched and batched RDMA
+operations is very different, which has implications on their CPU usage and
+peak throughput.
+\item We discover evidence of a work request cache in Mellanox's RDMA adapters,
+and suspect that it is malfunctioning in one adapter generation.
+\item We document the working of PCIe counters in Intel's Xeon servers.
+\end{itemize}
 
-
-
+The rest of this paper is organized as follows. Section~\ref{sec:intro} presents
+a brief overview of PCIe express and InfiniBand/RDMA, and describes the
+metrics reported by various PCIe counters. Section~\ref{sec:measurements}
+presents the results from our PCIe measurements of different RDMA operations
+on two generations of Mellanox's adapters. Section~\ref{sec:related} discusses
+some related work. Section~\ref{sec:concl} discusses lines of future work and
+concludes.
